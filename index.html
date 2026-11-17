@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<title>MY COACH</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{--bg:#0b1220;--panel:#141f30;--panel2:#1b2a3d;--line:#29394e;--text:#f4f7fb;--muted:#9aa9bb;--green:#a3e635;--orange:#fb923c;--blue:#38bdf8}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#0b1220,#101a29);color:var(--text);font:15px system-ui,-apple-system,Segoe UI,sans-serif;padding-bottom:88px}
+header{padding:22px 18px 14px;display:flex;justify-content:space-between;align-items:center}
+.brand{display:flex;align-items:center;gap:10px}.logo{width:42px;height:42px;border-radius:14px;background:var(--green);color:#10200a;display:grid;place-items:center;font-weight:900;font-size:17px}.brand h1{font-size:20px;letter-spacing:1.5px;margin:0}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:1px}
+.pill{border:1px solid var(--line);border-radius:999px;padding:8px 12px;color:var(--green);font-size:12px}
+main{padding:0 16px;max-width:720px;margin:auto}.hello{margin:12px 2px 18px}.hello h2{font-size:25px;margin:0 0 4px}.hello p{margin:0;color:var(--muted)}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin:22px 2px 10px}.section-title h3{margin:0;font-size:16px}.section-title span{font-size:12px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:15px;min-width:0}
+.metric{min-height:112px}.metric .top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px}.ico{font-size:20px}.value{font-size:25px;font-weight:750;margin:10px 0 2px}.sub{font-size:11px;color:var(--muted)}
+.green{color:var(--green)}.orange{color:var(--orange)}.blue{color:var(--blue)}
+.track{height:7px;background:#29384a;border-radius:99px;overflow:hidden;margin-top:10px}.fill{height:100%;border-radius:99px;background:var(--green)}
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+button{border:0;border-radius:12px;background:var(--panel2);color:var(--text);padding:12px 8px;font-weight:650;font-size:13px;cursor:pointer}
+button.primary{background:var(--green);color:#13210b}button:active{transform:scale(.98)}
+.wide{display:flex;align-items:center;justify-content:space-between;gap:12px}.wide strong{display:block}.wide small{color:var(--muted)}
+.list{display:grid;gap:9px}.item{display:flex;align-items:center;gap:12px}.item .symbol{width:38px;height:38px;border-radius:12px;background:var(--panel2);display:grid;place-items:center;font-size:18px}.item .desc{flex:1}.item small{display:block;color:var(--muted);margin-top:2px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#0d1726f2;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:9px 4px calc(9px + env(safe-area-inset-bottom));backdrop-filter:blur(12px);z-index:5}
+nav button{background:transparent;color:var(--muted);font-size:10px;padding:6px 4px;min-width:56px}nav button b{display:block;font-size:19px;margin-bottom:2px}nav button.active{color:var(--green)}
+.page{display:none}.page.active{display:block}.pagehead{margin:12px 2px 16px}.pagehead h2{margin:0 0 4px;font-size:24px}.pagehead p{margin:0;color:var(--muted)}
+input,select{width:100%;background:#0d1726;border:1px solid var(--line);border-radius:11px;padding:12px;color:var(--text);margin:6px 0 12px;font:inherit}
+.formrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}.note{font-size:12px;color:var(--muted);line-height:1.5}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#e5f7c5;color:#18240d;padding:10px 16px;border-radius:99px;font-weight:700;display:none;z-index:9}
+@media(min-width:600px){main{padding:0 24px}.grid{gap:14px}.metric{min-height:130px}}
+</style>
+</head>
+<body>
+<header>
+ <div class="brand"><div class="logo">MC</div><div><h1>MY COACH</h1><small>SPORT · NUTRITION · PROGRESSION</small></div></div>
+ <div class="pill" id="contextPill">À TERRE ▾</div>
+</header>
+<main>
+<section class="page active" id="home">
+ <div class="hello"><h2>On avance 💪</h2><p>Ton tableau de bord quotidien</p></div>
+ <div class="grid">
+  <div class="card metric"><div class="top"><span>Calories</span><span class="ico orange">🔥</span></div><div class="value" id="calVal">0 <small style="font-size:13px;color:var(--muted)">/ 2 200</small></div><div class="track"><div class="fill" id="calBar" style="width:0%;background:var(--orange)"></div></div><div class="sub">kcal consommées</div></div>
+  <div class="card metric"><div class="top"><span>Protéines</span><span class="ico green">🥩</span></div><div class="value" id="proVal">0 g <small style="font-size:13px;color:var(--muted)">/ 160 g</small></div><div class="track"><div class="fill" id="proBar" style="width:0%"></div></div><div class="sub">objectif quotidien</div></div>
+  <div class="card metric"><div class="top"><span>Hydratation</span><span class="ico blue">💧</span></div><div class="value" id="waterVal">0 ml</div><div class="track"><div class="fill" id="waterBar" style="width:0%;background:var(--blue)"></div></div><div class="sub">objectif : 2 000 ml</div></div>
+  <div class="card metric"><div class="top"><span>Activité</span><span class="ico orange">👟</span></div><div class="value" id="stepsVal">0</div><div class="sub">pas enregistrés aujourd'hui</div></div>
+ </div>
+ <div class="section-title"><h3>Hydratation rapide</h3><span>Ajouter de l'eau</span></div>
+ <div class="card"><div class="actions"><button onclick="addWater(150)">+150 ml</button><button onclick="addWater(250)">+250 ml</button><button onclick="addWater(500)">+500 ml</button></div><div class="actions"><button onclick="customWater()">Autre quantité</button><button onclick="addWater(330)">+330 ml</button><button onclick="addWater(750)">+750 ml</button></div></div>
+ <div class="section-title"><h3>Accès rapides</h3><span>Ton suivi</span></div>
+ <div class="card list">
+  <div class="item"><div class="symbol">🏋️</div><div class="desc"><strong>Entraînement</strong><small>Programmes A, B et C · à bord / à terre</small></div><button onclick="showPage('sport')">Ouvrir</button></div>
+  <div class="item"><div class="symbol">🍽️</div><div class="desc"><strong>Nutrition</strong><small>Repas, aliments et recettes</small></div><button onclick="showPage('food')">Ouvrir</button></div>
+  <div class="item"><div class="symbol">📈</div><div class="desc"><strong>Progression</strong><small>Poids, mensurations et bilans</small></div><button onclick="showPage('stats')">Ouvrir</button></div>
+ </div>
+ <p class="note" style="margin:14px 4px">Prototype de départ : les compteurs d'eau et les entrées de démonstration sont enregistrés localement sur cet appareil.</p>
+</section>
+
+<section class="page" id="sport">
+ <div class="pagehead"><h2>Entraînement 🏋️</h2><p>Programmes adaptés à ton environnement</p></div>
+ <div class="card"><div class="wide"><div><strong>Contexte d'entraînement</strong><small>Choisis où tu te trouves</small></div><select id="placeSelect" onchange="setPlace(this.value)" style="width:120px;margin:0"><option>À terre</option><option>À bord</option></select></div></div>
+ <div class="section-title"><h3>Choisir une séance</h3></div>
+ <div class="grid">
+  <div class="card"><div class="value green">A</div><strong>Haut du corps</strong><p class="note">Pectoraux, dos, triceps et abdos</p><button class="primary" onclick="toast('Séance A : module à construire')">Voir la séance</button></div>
+  <div class="card"><div class="value orange">B</div><strong>Dos et jambes</strong><p class="note">Épaisseur du dos, biceps et jambes</p><button onclick="toast('Séance B : module à construire')">Voir la séance</button></div>
+  <div class="card"><div class="value blue">C</div><strong>Haut du corps</strong><p class="note">Pectoraux, bras, épaules et abdos</p><button onclick="toast('Séance C : module à construire')">Voir la séance</button></div>
+  <div class="card"><div class="value">🧘</div><strong>Mobilité</strong><p class="note">Séances guidées de 15 à 20 minutes</p><button onclick="toast('Mobilité : module à construire')">Ouvrir</button></div>
+ </div>
+ <div class="section-title"><h3>Cardio</h3></div><div class="card wide"><div><strong>Activités cardio</strong><small>Marche, corde, vélo, course…</small></div><button onclick="toast('Suivi cardio : à construire')">Ajouter</button></div>
+</section>
+
+<section class="page" id="food">
+ <div class="pagehead"><h2>Nutrition 🍽️</h2><p>Objectif journalier : 2 200 kcal · 160 g de protéines</p></div>
+ <div class="grid">
+  <div class="card"><div class="top">Calories</div><div class="value orange">2 200</div><div class="sub">kcal cible</div></div>
+  <div class="card"><div class="top">Protéines</div><div class="value green">160 g</div><div class="sub">cible quotidienne</div></div>
+ </div>
+ <div class="section-title"><h3>Ajouter un repas</h3></div>
+ <div class="card">
+  <label for="mealName">Aliment ou recette</label><input id="mealName" placeholder="Ex. poulet, riz, yaourt…">
+  <div class="formrow"><div><label for="mealCal">Calories (kcal)</label><input id="mealCal" type="number" inputmode="numeric" placeholder="Ex. 350"></div><div><label for="mealPro">Protéines (g)</label><input id="mealPro" type="number" inputmode="decimal" placeholder="Ex. 30"></div></div>
+  <button class="primary" style="width:100%" onclick="saveMeal()">Enregistrer l'entrée</button>
+ </div>
+ <div class="section-title"><h3>Autres méthodes prévues</h3></div>
+ <div class="card list">
+  <div class="item"><div class="symbol">📷</div><div class="desc"><strong>Photo du repas</strong><small>Analyse IA à connecter ultérieurement</small></div></div>
+  <div class="item"><div class="symbol">▦</div><div class="desc"><strong>Code-barres</strong><small>Base produits à connecter ultérieurement</small></div></div>
+  <div class="item"><div class="symbol">🧁</div><div class="desc"><strong>Recettes de pâtisserie</strong><small>Calcul par recette, poids et portion à développer</small></div></div>
+ </div>
+ <div id="mealList" class="card" style="margin-top:10px"><strong>Repas enregistrés</strong><p class="note">Aucune entrée pour le moment.</p></div>
+</section>
+
+<section class="page" id="stats">
+ <div class="pagehead"><h2>Progression 📈</h2><p>Suivi à long terme, sans pesée obligatoire à bord</p></div>
+ <div class="card"><strong>Poids de référence</strong><div class="value green">84 kg</div><p class="note">Dernière valeur de départ connue. Prévoir une pesée environ une fois par semaine, à terre.</p></div>
+ <div class="section-title"><h3>Mensurations</h3><span>Une fois par mois</span></div>
+ <div class="card list">
+  <div class="item"><div class="symbol">📏</div><div class="desc"><strong>Tour de taille</strong><small>À renseigner chaque mois</small></div></div>
+  <div class="item"><div class="symbol">💪</div><div class="desc"><strong>Poitrine et bras</strong><small>À renseigner chaque mois</small></div></div>
+  <div class="item"><div class="symbol">🦵</div><div class="desc"><strong>Cuisses</strong><small>À renseigner chaque mois</small></div></div>
+ </div>
+ <div class="section-title"><h3>Bilan mensuel</h3></div><div class="card"><strong>Points positifs · Axes à améliorer · Objectifs suivants</strong><p class="note">Les bilans automatiques seront ajoutés après la mise en place de l'historique des entraînements et repas.</p></div>
+</section>
+</main>
+<nav>
+ <button class="active" data-page="home" onclick="showPage('home')"><b>⌂</b>Accueil</button>
+ <button data-page="sport" onclick="showPage('sport')"><b>🏋️</b>Sport</button>
+ <button data-page="food" onclick="showPage('food')"><b>🍽️</b>Nutrition</button>
+ <button data-page="stats" onclick="showPage('stats')"><b>📈</b>Suivi</button>
+</nav>
+<div class="toast" id="toast"></div>
+<script>
+const KEY='mycoach-prototype-v1';
+let state={water:0,calories:0,protein:0,steps:0,place:'À terre',meals:[]};
+try{state={...state,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch(e){}
+function persist(){localStorage.setItem(KEY,JSON.stringify(state));render()}
+function render(){
+ document.getElementById('waterVal').textContent=state.water+' ml';
+ document.getElementById('waterBar').style.width=Math.min(100,state.water/2000*100)+'%';
+ document.getElementById('calVal').innerHTML=state.calories+' <small style="font-size:13px;color:var(--muted)">/ 2 200</small>';
+ document.getElementById('calBar').style.width=Math.min(100,state.calories/2200*100)+'%';
+ document.getElementById('proVal').innerHTML=state.protein+' g <small style="font-size:13px;color:var(--muted)">/ 160 g</small>';
+ document.getElementById('proBar').style.width=Math.min(100,state.protein/160*100)+'%';
+ document.getElementById('stepsVal').textContent=Number(state.steps||0).toLocaleString('fr-FR');
+ document.getElementById('contextPill').textContent=state.place.toUpperCase()+' ▾';
+ document.getElementById('placeSelect').value=state.place;
+ const list=document.getElementById('mealList');
+ list.innerHTML='<strong>Repas enregistrés</strong>'+(state.meals.length?state.meals.map(m=>`<div class="item" style="margin-top:10px"><div class="symbol">🥗</div><div class="desc"><strong>${escapeHtml(m.name)}</strong><small>${m.cal} kcal · ${m.pro} g protéines</small></div></div>`).join(''):'<p class="note">Aucune entrée pour le moment.</p>');
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function addWater(n){state.water+=n;persist();toast('+'+n+' ml ajoutés 💧')}
+function customWater(){let n=prompt('Quantité d’eau en ml :');if(n&&Number(n)>0)addWater(Math.round(Number(n)))}
+function setPlace(v){state.place=v;persist();toast('Contexte : '+v)}
+function saveMeal(){let name=document.getElementById('mealName').value.trim(),cal=Number(document.getElementById('mealCal').value),pro=Number(document.getElementById('mealPro').value);if(!name||cal<0||pro<0){toast('Renseigne le nom, les calories et les protéines');return}state.meals.unshift({name,cal,pro});state.calories+=cal;state.protein+=pro;persist();document.getElementById('mealName').value='';document.getElementById('mealCal').value='';document.getElementById('mealPro').value='';toast('Repas enregistré')}
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));window.scrollTo(0,0)}
+let toastTimer;function toast(t){let el=document.getElementById('toast');el.textContent=t;el.style.display='block';clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.style.display='none',2200)}
+render();
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
+</script>
+</body></html>

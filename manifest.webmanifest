@@ -1,0 +1,10 @@
+{
+  "name": "MY COACH",
+  "short_name": "MY COACH",
+  "lang": "fr",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
+  "icons": []
+}
