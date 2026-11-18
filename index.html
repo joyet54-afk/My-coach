@@ -30,6 +30,19 @@ nav button{background:transparent;color:var(--muted);font-size:10px;padding:6px 
 input,select{width:100%;background:#0d1726;border:1px solid var(--line);border-radius:11px;padding:12px;color:var(--text);margin:6px 0 12px;font:inherit}
 .formrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}.note{font-size:12px;color:var(--muted);line-height:1.5}
 .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#e5f7c5;color:#18240d;padding:10px 16px;border-radius:99px;font-weight:700;display:none;z-index:9}
+
+.workout-panel{display:none;margin-top:14px}.workout-panel.open{display:block}
+.exercise{background:#101b2b;border:1px solid var(--line);border-radius:14px;padding:12px;margin:10px 0}
+.exercise h4{margin:0 0 4px;font-size:15px}.exercise .hint{font-size:11px;color:var(--muted);margin-bottom:10px}
+.exercise-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.exercise-grid label{font-size:11px;color:var(--muted)}
+.exercise-grid input{margin:4px 0 8px;padding:10px}
+.setrow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0;border-top:1px solid var(--line);font-size:12px}
+.setrow button{padding:7px 10px;font-size:11px}
+.timerbox{background:#0d1726;border:1px solid var(--green);border-radius:16px;padding:14px;text-align:center;margin:12px 0}
+.timer-number{font-size:36px;font-weight:800;color:var(--green);font-variant-numeric:tabular-nums}
+.timer-actions{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.timer-actions button{padding:9px 12px}
 @media(min-width:600px){main{padding:0 24px}.grid{gap:14px}.metric{min-height:130px}}
 </style>
 </head>
@@ -63,10 +76,19 @@ input,select{width:100%;background:#0d1726;border:1px solid var(--line);border-r
  <div class="card"><div class="wide"><div><strong>Contexte d'entraînement</strong><small>Choisis où tu te trouves</small></div><select id="placeSelect" onchange="setPlace(this.value)" style="width:120px;margin:0"><option>À terre</option><option>À bord</option></select></div></div>
  <div class="section-title"><h3>Choisir une séance</h3></div>
  <div class="grid">
-  <div class="card"><div class="value green">A</div><strong>Haut du corps</strong><p class="note">Pectoraux, dos, triceps et abdos</p><button class="primary" onclick="toast('Séance A : module à construire')">Voir la séance</button></div>
+  <div class="card"><div class="value green">A</div><strong>Haut du corps</strong><p class="note">Pectoraux, dos, triceps et abdos</p><button class="primary" onclick="openWorkoutA()">Voir la séance</button></div>
   <div class="card"><div class="value orange">B</div><strong>Dos et jambes</strong><p class="note">Épaisseur du dos, biceps et jambes</p><button onclick="toast('Séance B : module à construire')">Voir la séance</button></div>
   <div class="card"><div class="value blue">C</div><strong>Haut du corps</strong><p class="note">Pectoraux, bras, épaules et abdos</p><button onclick="toast('Séance C : module à construire')">Voir la séance</button></div>
   <div class="card"><div class="value">🧘</div><strong>Mobilité</strong><p class="note">Séances guidées de 15 à 20 minutes</p><button onclick="toast('Mobilité : module à construire')">Ouvrir</button></div>
+ </div>
+ <div class="workout-panel card" id="workoutA">
+  <div class="wide"><div><strong id="workoutTitle">Séance A</strong><small id="workoutProgress">Exercice 1</small></div><button onclick="closeWorkoutA()">Fermer</button></div>
+  <p class="note" id="workoutIntro"></p>
+  <div id="exerciseList"></div>
+  <div class="timerbox"><div class="note" id="timerStatus">Temps de récupération</div><div class="timer-number" id="timerDisplay">01:30</div>
+   <div class="timer-actions"><button id="timerToggle" onclick="toggleTimer()">Pause</button><button onclick="adjustTimer(15)">+15 s</button><button onclick="adjustTimer(30)">+30 s</button><button onclick="resetTimer()">Réinitialiser</button></div>
+  </div>
+  <div class="section-title"><h3>Historique de cette séance</h3></div><p class="note" id="workoutHistory">Aucune série enregistrée pour le moment.</p>
  </div>
  <div class="section-title"><h3>Cardio</h3></div><div class="card wide"><div><strong>Activités cardio</strong><small>Marche, corde, vélo, course…</small></div><button onclick="toast('Suivi cardio : à construire')">Ajouter</button></div>
 </section>
@@ -136,6 +158,74 @@ function setPlace(v){state.place=v;persist();toast('Contexte : '+v)}
 function saveMeal(){let name=document.getElementById('mealName').value.trim(),cal=Number(document.getElementById('mealCal').value),pro=Number(document.getElementById('mealPro').value);if(!name||cal<0||pro<0){toast('Renseigne le nom, les calories et les protéines');return}state.meals.unshift({name,cal,pro});state.calories+=cal;state.protein+=pro;persist();document.getElementById('mealName').value='';document.getElementById('mealCal').value='';document.getElementById('mealPro').value='';toast('Repas enregistré')}
 function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));window.scrollTo(0,0)}
 let toastTimer;function toast(t){let el=document.getElementById('toast');el.textContent=t;el.style.display='block';clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.style.display='none',2200)}
+
+// Module Sport : séance A avec sauvegarde locale des séries
+const WORKOUT_KEY='mycoach-workout-v1';
+const workoutPrograms={
+ 'À bord':[
+  {name:'Développé couché haltères, prise neutre',sets:4,reps:'8–12',rest:90,hint:'Pectoraux · descente contrôlée, amplitude sans douleur'},
+  {name:'Chest press à la machine',sets:3,reps:'10–12',rest:90,hint:'Pectoraux · épaules basses et mouvement maîtrisé'},
+  {name:'Rowing assis à la machine',sets:3,reps:'10–12',rest:90,hint:'Dos · tirer les coudes vers l’arrière'},
+  {name:'Extension triceps à la poulie',sets:3,reps:'10–12',rest:60,hint:'Triceps · coudes près du corps'},
+  {name:'Gainage',sets:3,reps:'30–45 s',rest:45,hint:'Abdominaux · garder le corps aligné'}
+ ],
+ 'À terre':[
+  {name:'Développé couché haltères, prise neutre',sets:4,reps:'8–12',rest:90,hint:'Pectoraux · descente contrôlée, amplitude sans douleur'},
+  {name:'Développé incliné haltères',sets:3,reps:'10–12',rest:90,hint:'Haut des pectoraux · inclinaison modérée'},
+  {name:'Rowing haltère un bras',sets:3,reps:'10–12',rest:90,hint:'Dos · 10–12 répétitions de chaque côté'},
+  {name:'Extension triceps haltère',sets:3,reps:'10–12',rest:60,hint:'Triceps · arrêter si gêne à l’épaule'},
+  {name:'Gainage',sets:3,reps:'30–45 s',rest:45,hint:'Abdominaux · garder le corps aligné'}
+ ]
+};
+let workoutLog={};
+try{workoutLog=JSON.parse(localStorage.getItem(WORKOUT_KEY)||'{}')||{}}catch(e){workoutLog={}}
+let currentExercise=0,timerSeconds=90,timerInterval=null,timerRunning=false;
+function workoutPlace(){return document.getElementById('placeSelect').value}
+function workoutKey(){return workoutPlace()+'|A'}
+function currentProgram(){return workoutPrograms[workoutPlace()]||workoutPrograms['À terre']}
+function openWorkoutA(){
+ currentExercise=0;document.getElementById('workoutA').classList.add('open');
+ document.getElementById('workoutTitle').textContent='Séance A – '+workoutPlace();
+ document.getElementById('workoutIntro').textContent='Priorité pectoraux · mouvements contrôlés · arrête en cas de douleur';
+ renderWorkout();document.getElementById('workoutA').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function closeWorkoutA(){stopTimer();document.getElementById('workoutA').classList.remove('open')}
+function getExerciseLog(i){let k=workoutKey();workoutLog[k]=workoutLog[k]||{};workoutLog[k][i]=workoutLog[k][i]||[];return workoutLog[k][i]}
+function renderWorkout(){
+ const prog=currentProgram(),list=document.getElementById('exerciseList');
+ document.getElementById('workoutProgress').textContent='Exercice '+(currentExercise+1)+' / '+prog.length;
+ list.innerHTML=prog.map((ex,i)=>{
+  const logs=getExerciseLog(i),done=logs.length;
+  return `<div class="exercise"><h4>${i+1}. ${ex.name}</h4><div class="hint">${ex.sets} séries · ${ex.reps} répétitions · repos ${ex.rest}s<br>${ex.hint}</div>
+   <div class="exercise-grid"><div><label for="load${i}">Charge (kg)</label><input id="load${i}" type="number" min="0" step="0.5" inputmode="decimal" placeholder="Ex. 20"></div><div><label for="reps${i}">Répétitions réalisées</label><input id="reps${i}" type="number" min="1" step="1" inputmode="numeric" placeholder="Ex. 10"></div></div>
+   <button class="primary" style="width:100%" onclick="validateSet(${i})" ${done>=ex.sets?'disabled':''}>Valider la série ${Math.min(done+1,ex.sets)} / ${ex.sets}</button>
+   <div>${logs.map((x,j)=>`<div class="setrow"><span>Série ${j+1} · ${x.load} kg × ${x.reps}</span><span class="green">✓</span></div>`).join('')}</div>
+   ${done>=ex.sets?'<p class="note green">Exercice terminé ✓</p>':''}
+   <button style="margin-top:8px" onclick="goExercise(${i})">Afficher cet exercice</button></div>`;
+ }).join('');
+ renderHistory();
+}
+function validateSet(i){
+ const ex=currentProgram()[i],logs=getExerciseLog(i),load=Number(document.getElementById('load'+i).value),reps=Number(document.getElementById('reps'+i).value);
+ if(!Number.isFinite(load)||load<0||!Number.isFinite(reps)||reps<1){toast('Indique la charge et les répétitions');return}
+ if(logs.length>=ex.sets){toast('Toutes les séries sont déjà validées');return}
+ logs.push({load,reps,date:new Date().toISOString()});
+ localStorage.setItem(WORKOUT_KEY,JSON.stringify(workoutLog));
+ currentExercise=i;timerSeconds=ex.rest;startTimer();renderWorkout();toast('Série enregistrée ✓');
+}
+function goExercise(i){currentExercise=i;document.getElementById('workoutProgress').textContent='Exercice '+(i+1)+' / '+currentProgram().length;document.getElementById('exerciseList').children[i]?.scrollIntoView({behavior:'smooth',block:'center'})}
+function renderHistory(){
+ const el=document.getElementById('workoutHistory'),logs=workoutLog[workoutKey()]||{};
+ const rows=Object.entries(logs).flatMap(([i,sets])=>sets.map((x,j)=>`${currentProgram()[Number(i)].name} — série ${j+1} : ${x.load} kg × ${x.reps}`));
+ el.textContent=rows.length?rows.slice(-12).join(' · '):'Aucune série enregistrée pour le moment.';
+}
+function startTimer(){stopTimer();timerRunning=true;updateTimer();document.getElementById('timerStatus').textContent='Récupération en cours';document.getElementById('timerToggle').textContent='Pause';timerInterval=setInterval(()=>{if(timerSeconds>0){timerSeconds--;updateTimer()}else{stopTimer();document.getElementById('timerStatus').textContent='Repos terminé · à toi de jouer !';document.getElementById('timerToggle').textContent='Relancer';if(navigator.vibrate)navigator.vibrate([250,100,250]);}},1000)}
+function stopTimer(){if(timerInterval)clearInterval(timerInterval);timerInterval=null;timerRunning=false}
+function updateTimer(){document.getElementById('timerDisplay').textContent=String(Math.floor(timerSeconds/60)).padStart(2,'0')+':'+String(timerSeconds%60).padStart(2,'0')}
+function toggleTimer(){if(timerRunning){stopTimer();document.getElementById('timerToggle').textContent='Reprendre';document.getElementById('timerStatus').textContent='Récupération en pause'}else{if(timerSeconds<=0)timerSeconds=90;startTimer()}}
+function adjustTimer(n){timerSeconds+=n;updateTimer();if(!timerRunning)document.getElementById('timerStatus').textContent='Temps ajusté'}
+function resetTimer(){stopTimer();timerSeconds=currentProgram()[currentExercise]?.rest||90;updateTimer();document.getElementById('timerToggle').textContent='Démarrer';document.getElementById('timerStatus').textContent='Chronomètre réinitialisé'}
+
 render();
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
 </script>
